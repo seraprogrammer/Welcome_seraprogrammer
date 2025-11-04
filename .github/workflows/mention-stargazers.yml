@@ -1,119 +1,119 @@
-name: Mention New Stargazers
+# name: Mention New Stargazers
 
-on:
-  schedule:
-    # Runs every hour at the start of the hour
-    - cron: '0 * * * *'
-  workflow_dispatch: # Allows manual trigger
+# on:
+#   schedule:
+#     # Runs every hour at the start of the hour
+#     - cron: '0 * * * *'
+#   workflow_dispatch: # Allows manual trigger
 
-permissions:
-  issues: write
-  contents: read
+# permissions:
+#   issues: write
+#   contents: read
 
-jobs:
-  mention-stargazers:
-    runs-on: ubuntu-latest
+# jobs:
+#   mention-stargazers:
+#     runs-on: ubuntu-latest
     
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
       
-      - name: Fetch and Mention New Stargazers
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const path = require('path');
+#       - name: Fetch and Mention New Stargazers
+#         uses: actions/github-script@v7
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           script: |
+#             const fs = require('fs');
+#             const path = require('path');
             
-            const TARGET_OWNER = 'emmabostian';
-            const TARGET_REPO = 'developer-portfolios';
-            const TRACKING_FILE = 'mentioned-stargazers.json';
+#             const TARGET_OWNER = 'emmabostian';
+#             const TARGET_REPO = 'developer-portfolios';
+#             const TRACKING_FILE = 'mentioned-stargazers.json';
             
-            // Load previously mentioned stargazers
-            let mentionedUsers = [];
-            try {
-              if (fs.existsSync(TRACKING_FILE)) {
-                const data = fs.readFileSync(TRACKING_FILE, 'utf8');
-                mentionedUsers = JSON.parse(data);
-              }
-            } catch (error) {
-              console.log('No previous tracking file found, starting fresh');
-            }
+#             // Load previously mentioned stargazers
+#             let mentionedUsers = [];
+#             try {
+#               if (fs.existsSync(TRACKING_FILE)) {
+#                 const data = fs.readFileSync(TRACKING_FILE, 'utf8');
+#                 mentionedUsers = JSON.parse(data);
+#               }
+#             } catch (error) {
+#               console.log('No previous tracking file found, starting fresh');
+#             }
             
-            // Fetch recent stargazers (last 30)
-            let stargazers = [];
-            try {
-              const response = await github.rest.activity.listStargazersForRepo({
-                owner: TARGET_OWNER,
-                repo: TARGET_REPO,
-                per_page: 30,
-                headers: {
-                  Accept: 'application/vnd.github.v3.star+json'
-                }
-              });
-              stargazers = response.data;
-            } catch (error) {
-              console.log('Error fetching stargazers:', error.message);
-              return;
-            }
+#             // Fetch recent stargazers (last 30)
+#             let stargazers = [];
+#             try {
+#               const response = await github.rest.activity.listStargazersForRepo({
+#                 owner: TARGET_OWNER,
+#                 repo: TARGET_REPO,
+#                 per_page: 30,
+#                 headers: {
+#                   Accept: 'application/vnd.github.v3.star+json'
+#                 }
+#               });
+#               stargazers = response.data;
+#             } catch (error) {
+#               console.log('Error fetching stargazers:', error.message);
+#               return;
+#             }
             
-            // Find new stargazers
-            const newStargazers = stargazers.filter(star => 
-              !mentionedUsers.includes(star.user.login)
-            );
+#             // Find new stargazers
+#             const newStargazers = stargazers.filter(star => 
+#               !mentionedUsers.includes(star.user.login)
+#             );
             
-            if (newStargazers.length === 0) {
-              console.log('No new stargazers found');
-              return;
-            }
+#             if (newStargazers.length === 0) {
+#               console.log('No new stargazers found');
+#               return;
+#             }
             
-            console.log(`Found ${newStargazers.length} new stargazer(s)`);
+#             console.log(`Found ${newStargazers.length} new stargazer(s)`);
             
-            // Create issue for each new stargazer
-            for (const star of newStargazers) {
-              const username = star.user.login;
-              const starredAt = new Date(star.starred_at).toLocaleString();
+#             // Create issue for each new stargazer
+#             for (const star of newStargazers) {
+#               const username = star.user.login;
+#               const starredAt = new Date(star.starred_at).toLocaleString();
               
-              try {
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: `🌟 Welcome @${username} - Showcase Your Portfolio!`,
-                  body: `## Hi @${username}! 👋\n\n` +
-                        `Thank you for starring [${TARGET_OWNER}/${TARGET_REPO}](https://github.com/${TARGET_OWNER}/${TARGET_REPO})! We truly appreciate your support. ⭐\n\n` +
-                        `### 🚀 Showcase Your Developer Portfolio\n\n` +
-                        `We'd love to invite you to showcase your developer portfolio on **[seraprogrammer.com](https://seraprogrammer.com)**!\n\n` +
-                        `**Why join us?**\n` +
-                        `- 🌍 Reach a global audience with your portfolio\n` +
-                        `- 💼 Connect with developers and potential clients worldwide\n` +
-                        `- ✨ Gain visibility in the developer community\n` +
-                        `- 🎯 Help us build a comprehensive directory of talented developers\n\n` +
-                        `Our goal is to help developers like you gain global recognition by featuring your work on our platform.\n\n` +
-                        `**Ready to get started?** Visit [seraprogrammer.com](https://seraprogrammer.com) and share your amazing portfolio with the world!\n\n` +
-                        `---\n` +
-                        `**Starred at:** ${starredAt}\n\n` +
-                        `*This is an automated invitation sent via GitHub Actions. We appreciate your interest in developer portfolios!* 🙏`,
-                  labels: ['new-stargazer', 'invitation', 'automated']
-                });
+#               try {
+#                 await github.rest.issues.create({
+#                   owner: context.repo.owner,
+#                   repo: context.repo.repo,
+#                   title: `🌟 Welcome @${username} - Showcase Your Portfolio!`,
+#                   body: `## Hi @${username}! 👋\n\n` +
+#                         `Thank you for starring [${TARGET_OWNER}/${TARGET_REPO}](https://github.com/${TARGET_OWNER}/${TARGET_REPO})! We truly appreciate your support. ⭐\n\n` +
+#                         `### 🚀 Showcase Your Developer Portfolio\n\n` +
+#                         `We'd love to invite you to showcase your developer portfolio on **[seraprogrammer.com](https://seraprogrammer.com)**!\n\n` +
+#                         `**Why join us?**\n` +
+#                         `- 🌍 Reach a global audience with your portfolio\n` +
+#                         `- 💼 Connect with developers and potential clients worldwide\n` +
+#                         `- ✨ Gain visibility in the developer community\n` +
+#                         `- 🎯 Help us build a comprehensive directory of talented developers\n\n` +
+#                         `Our goal is to help developers like you gain global recognition by featuring your work on our platform.\n\n` +
+#                         `**Ready to get started?** Visit [seraprogrammer.com](https://seraprogrammer.com) and share your amazing portfolio with the world!\n\n` +
+#                         `---\n` +
+#                         `**Starred at:** ${starredAt}\n\n` +
+#                         `*This is an automated invitation sent via GitHub Actions. We appreciate your interest in developer portfolios!* 🙏`,
+#                   labels: ['new-stargazer', 'invitation', 'automated']
+#                 });
                 
-                console.log(`Created issue for @${username}`);
+#                 console.log(`Created issue for @${username}`);
                 
-                // Add to mentioned list
-                mentionedUsers.push(username);
-              } catch (error) {
-                console.log(`Error creating issue for @${username}:`, error.message);
-              }
-            }
+#                 // Add to mentioned list
+#                 mentionedUsers.push(username);
+#               } catch (error) {
+#                 console.log(`Error creating issue for @${username}:`, error.message);
+#               }
+#             }
             
-            // Save updated tracking file
-            fs.writeFileSync(TRACKING_FILE, JSON.stringify(mentionedUsers, null, 2));
-            console.log(`Updated tracking file with ${mentionedUsers.length} total users`);
+#             // Save updated tracking file
+#             fs.writeFileSync(TRACKING_FILE, JSON.stringify(mentionedUsers, null, 2));
+#             console.log(`Updated tracking file with ${mentionedUsers.length} total users`);
       
-      - name: Commit tracking file
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add mentioned-stargazers.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update mentioned stargazers tracking"
-          git push
+#       - name: Commit tracking file
+#         run: |
+#           git config --local user.email "github-actions[bot]@users.noreply.github.com"
+#           git config --local user.name "github-actions[bot]"
+#           git add mentioned-stargazers.json
+#           git diff --quiet && git diff --staged --quiet || git commit -m "Update mentioned stargazers tracking"
+#           git push
